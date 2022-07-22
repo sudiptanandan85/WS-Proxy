@@ -1,0 +1,55 @@
+<script runat="server">
+Platform.Load("core","1");
+   try {
+    // initialize WSProxy
+    var prox = new Script.Util.WSProxy();
+    
+    var guid = Platform.Function.GUID();
+    var name = "test1";
+    
+    
+    var de1  = {
+        Name: name,
+        CustomerKey: guid,
+        CategoryID: 0,
+        Description: "Another DE added via SSJS",
+        Fields: [{
+            FieldType: "Text",
+            Name: "ID",
+            MaxLength:18,
+            IsPrimaryKey: true,
+            IsRequired: true
+        },
+        {
+            FieldType: "Text",
+            Name: "Name",
+            MaxLength: 200
+        }]
+    }
+    var guid = Platform.Function.GUID();
+    var name = "test2";
+    var de2  = {
+        Name: name,
+        CustomerKey: guid,
+        CategoryID: 0,
+        Description: "Another DE added via SSJS",
+        Fields: [{
+            FieldType: "Text",
+            Name: "ID",
+            MaxLength:18,
+            IsPrimaryKey: true,
+            IsRequired: true
+        },
+        {
+            FieldType: "Text",
+            Name: "Name",
+            MaxLength: 200
+        }]
+    }
+     var res = prox.createBatch("DataExtension", [ de1, de2 ]);
+       Write(Stringify(res));
+  
+ } catch(error) {
+  Write(Stringify(error));
+ } 
+  </script>
