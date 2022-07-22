@@ -1,0 +1,75 @@
+<script runat="server">
+Platform.Load("core","1.1");  
+try{
+  
+//Set time range of retrieved tracking data
+var filter = {
+  Property: "EventDate", 
+  SimpleOperator: "between", 
+  Value: ["2016-01-01T00:00:00.000Z", "2017-10-30T00:00:00.000Z"]
+};  
+
+//Set Data Extension properties
+var fields = [
+      { "Name" : "SendID", "FieldType" : "Number"},
+      { "Name" : "SubscriberKey", "FieldType" : "Text", "MaxLength" : 50 },
+      { "Name" : "EventDate", "FieldType" : "Date", "Ordinal" : 2 },
+      { "Name" : "EventType", "FieldType" : "Text", "MaxLength" : 50 },
+      { "Name" : "TriggeredSendDefinitionObjectID", "FieldType" : "Text", "MaxLength" : 50 },
+      { "Name" : "BatchID", "FieldType" : "Number"},
+      { "Name" : "ClientID", "FieldType" : "Number"}
+    ]
+  
+var ClickEventDE = {
+    "CustomerKey" : "03_ClickEvent",
+    "Name" : "03_ClickEvent",
+    "Fields" : fields
+ };
+  
+//Create Data Extensions   
+var ClickDE = DataExtension.Add(ClickEventDE);
+
+//Set columns to retrieve
+var cols = ["SendID","SubscriberKey","EventDate","EventType","TriggeredSendDefinitionObjectID","BatchID","Client.ID"]; 
+  
+//Initiate data extensions
+var logClickData = DataExtension.Init("03_ClickEvent");
+  
+//Initiate WSProxy and set object properties
+var prox = new Script.Util.WSProxy(),
+    objectType = "ClickEvent",
+    moreData = true,
+    reqID = null,
+    numItems = 0;
+
+//Retrieve data using pagination and insert data to ClickEvent DE
+while(moreData) {
+    moreData = false;
+    var data = reqID == null ?
+           prox.retrieve(objectType, cols, filter):
+           prox.getNextBatch(objectType, reqID);
+
+    if(data != null) {
+        moreData = data.HasMoreRows;
+        reqID = data.RequestID;
+        if(data && data.Results) {
+            for(var i=0; i< data.Results.length; i++) {
+                   logClickData.Rows.Add({
+                    SendID: data.Results[i].SendID,
+                    SubscriberKey: data.Results[i].SubscriberKey,
+                    EventDate: data.Results[i].EventDate,
+                    EventType: data.Results[i].EventType,
+                    TriggeredSendDefinitionObjectID: data.Results[i].TriggeredSendDefinitionObjectID,
+                    BatchID: data.Results[i].BatchID,
+                    ClientID: data.Results[i].Client.ID
+                  });
+                numItems++;
+            }
+        }
+    }
+}
+Platform.Response.Write("<br>Inserted " + numItems + " records<br>")
+}catch(e){
+  Write(Stringify(e));
+}
+</script>
